@@ -278,7 +278,6 @@ class VLLMProtocol:
         endpoint_processes: list[Process],
         runtime: RuntimeContext,
         frontend_type: str = "dynamo",
-        profiling_enabled: bool = False,
         nsys_prefix: list[str] | None = None,
         dump_config_path: Path | None = None,
     ) -> list[str]:
@@ -289,7 +288,6 @@ class VLLMProtocol:
             endpoint_processes: All processes for this endpoint (for multi-node)
             runtime: Runtime context with paths and settings
             frontend_type: Frontend type (currently only "dynamo" supported for vLLM)
-            profiling_enabled: Whether profiling is enabled
             nsys_prefix: Optional nsys profiling command prefix
             dump_config_path: Path to dump config JSON
         """

@@ -296,7 +296,7 @@ class BackendProtocol(Protocol):
 
     def build_worker_command(
         self, process, endpoint_processes, runtime,
-        frontend_type, profiling_enabled, nsys_prefix, dump_config_path
+        frontend_type, nsys_prefix, dump_config_path
     ) -> list[str]: ...
 ```
 

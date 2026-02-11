@@ -93,13 +93,15 @@ class TRTLLMProtocol:
     def get_environment_for_mode(self, mode: WorkerMode) -> dict[str, str]:
         eplb_prefix = f"moe_shared_{uuid.uuid4().hex}"
 
-        if mode == "prefill":
-            return {**self.prefill_environment, "TRTLLM_EPLB_SHM_NAME": eplb_prefix}
-        elif mode == "decode":
-            return {**self.decode_environment, "TRTLLM_EPLB_SHM_NAME": eplb_prefix}
-        elif mode == "agg":
-            return {**self.aggregated_environment, "TRTLLM_EPLB_SHM_NAME": eplb_prefix}
-        return {}
+        env_by_mode: dict[WorkerMode, dict[str, str]] = {
+            "prefill": self.prefill_environment,
+            "decode": self.decode_environment,
+            "agg": self.aggregated_environment,
+        }
+        base_env = env_by_mode.get(mode)
+        if base_env is None:
+            return {}
+        return {**base_env, "TRTLLM_EPLB_SHM_NAME": eplb_prefix}
 
     def get_process_environment(self, process: "Process") -> dict[str, str]:
         """Get process-specific environment variables.
@@ -154,7 +156,6 @@ class TRTLLMProtocol:
         endpoint_processes: list["Process"],
         runtime: "RuntimeContext",
         frontend_type: str = "dynamo",
-        profiling_enabled: bool = False,
         nsys_prefix: list[str] | None = None,
         dump_config_path: Path | None = None,
     ) -> list[str]:
