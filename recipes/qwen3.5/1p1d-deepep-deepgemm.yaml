@@ -10,6 +10,8 @@ model:
   container: "dev"  # docker://lmsysorg/sglang:dev
   precision: "fp8"
 
+setup_script: "rebuild-deepep.sh"
+
 resources:
   gpu_type: "gb200"
   gpus_per_node: 4
@@ -58,7 +60,7 @@ backend:
     prefill:
       served-model-name: "Qwen/Qwen3.5-397B-A17B-FP8"
       model-path: "/model/"
-      trust-remote-code: true
+
 
       # Parallelism: simple TP4 on 1 node, no EP
       tensor-parallel-size: 4
@@ -90,12 +92,12 @@ backend:
     decode:
       served-model-name: "Qwen/Qwen3.5-397B-A17B-FP8"
       model-path: "/model/"
-      trust-remote-code: true
+
 
       # Parallelism: TP8/EP8 across 2 GB200 nodes
-      tp-size: 8
-      dp-size: 8
-      ep-size: 8
+      tensor-parallel-size: 8
+      data-parallel-size: 8
+      expert-parallel-size: 8
       enable-dp-attention: true
 
       # Mamba hybrid model settings

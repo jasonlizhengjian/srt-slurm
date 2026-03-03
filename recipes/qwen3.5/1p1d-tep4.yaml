@@ -55,7 +55,7 @@ backend:
     prefill:
       served-model-name: "Qwen/Qwen3.5-397B-A17B-FP8"
       model-path: "/model/"
-      trust-remote-code: true
+
 
       attention-backend: "trtllm_mha"
 
@@ -82,13 +82,13 @@ backend:
     decode:
       served-model-name: "Qwen/Qwen3.5-397B-A17B-FP8"
       model-path: "/model/"
-      trust-remote-code: true
+
 
       attention-backend: "trtllm_mha"
 
       # TEP4: TP4 + EP4, standard TP attention (no dp-attention)
-      tp-size: 4
-      ep-size: 4
+      tensor-parallel-size: 4
+      expert-parallel-size: 4
       moe-dense-tp-size: 1
 
       mamba-scheduler-strategy: "no_buffer"
@@ -105,7 +105,7 @@ backend:
 
 benchmark:
   type: "sa-bench"
-  isl: 1024
-  osl: 1024
+  isl: 1000
+  osl: 1000
   concurrencies: "8x32x128x256x512x1024"
   req_rate: "inf"
