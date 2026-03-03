@@ -1,18 +1,13 @@
 # Qwen3.5-397B-A17B-FP8 1P1D: Prefill TP4 (1 node) + Decode DeepEP TP8/EP8 (2 nodes)
 # Total 3 nodes: prefill simple, decode wide-EP with low_latency
+# Performance is un-verified.
 
 name: "qwen3.5-1p1d-deepep-deepgemm"
 
 model:
   path: "qwen3.5-fp8"
-  container: "dev"
+  container: "dev"  # docker://lmsysorg/sglang:dev
   precision: "fp8"
-
-extra_mount:
-  - "/lustre/fsw/coreai_comparch_trtllm/yangminl/sglang:/sgl-workspace/sglang"
-  - "/lustre/fsw/coreai_comparch_trtllm/yangminl/DeepEP:/sgl-workspace/DeepEP"
-
-setup_script: "rebuild-deepep.sh"
 
 resources:
   gpu_type: "gb200"
@@ -71,7 +66,7 @@ backend:
 
       # Mamba hybrid model settings
       mamba-scheduler-strategy: "extra_buffer"
-      mamba-track-interval: 128
+      mamba-track-interval: 2048
       mamba-ssm-dtype: "bfloat16"
 
       # PD disaggregation
@@ -80,8 +75,8 @@ backend:
 
       # Memory: same as AGG/1p1d configs
       mem-fraction-static: 0.75
-      chunked-prefill-size: 2048
-      context-length: 262144
+      chunked-prefill-size: 16384
+      context-length: 2020
 
       # Tell prefill about decode's actual TP/DP sizes for correct KV transfer
       disaggregation-decode-tp: 8
@@ -104,7 +99,7 @@ backend:
 
       # Mamba hybrid model settings
       mamba-scheduler-strategy: "extra_buffer"
-      mamba-track-interval: 128
+      mamba-track-interval: 2048
       mamba-ssm-dtype: "bfloat16"
 
       # PD disaggregation
@@ -122,8 +117,8 @@ backend:
 
       max-mamba-cache-size: 3200
       max-running-requests: 640
-      chunked-prefill-size: 2048
-      context-length: 262144
+      chunked-prefill-size: 16384
+      context-length: 2020
       cuda-graph-max-bs: 128
       watchdog-timeout: 1000000
 

@@ -5,11 +5,8 @@ name: "qwen3.5-agg-tep4"
 
 model:
   path: "qwen3.5-fp8"
-  container: "dev"
+  container: "dev"  # docker://lmsysorg/sglang:dev
   precision: "fp8"
-
-extra_mount:
-  - "/lustre/fsw/coreai_comparch_trtllm/yangminl/sglang:/sgl-workspace/sglang"
 
 resources:
   gpu_type: "gb200"
@@ -53,7 +50,7 @@ backend:
       max-prefill-tokens: 16384
       context-length: 2020
       cuda-graph-max-bs: 1024
-      enable-symm-mem: true
+      # enable-symm-mem: true
 
       decode-log-interval: 1
       stream-interval: 50
@@ -62,6 +59,5 @@ benchmark:
   type: "sa-bench"
   isl: 1000
   osl: 1000
-  random_range_ratio: 1.0
   concurrencies: "1x2x4x8x16x32x64x128x256x512x1024"
   req_rate: "inf"

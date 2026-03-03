@@ -14,6 +14,10 @@ cd "$DEEPEP_SRC"
 
 # Find NVSHMEM
 NVSHMEM_DIR=$(find /usr/local -name "nvshmem" -type d 2>/dev/null | head -1)
+if [ -z "${NVSHMEM_DIR:-}" ]; then
+    echo "ERROR: NVSHMEM installation not found under /usr/local" >&2
+    exit 1
+fi
 echo "NVSHMEM_DIR=$NVSHMEM_DIR"
 
 # Fix missing nvshmem symlinks (container has .so.3 but not .so)
@@ -23,9 +27,13 @@ if [ ! -f "$NVSHMEM_LIB/libnvshmem_host.so" ] && [ -f "$NVSHMEM_LIB/libnvshmem_h
     ln -sf libnvshmem_host.so.3 "$NVSHMEM_LIB/libnvshmem_host.so"
 fi
 
-# Verify our patch is in place
+# Apply kNumMaxTopK=16 patch (Qwen3.5 uses topk=10, default kNumMaxTopK=8 is insufficient)
+sed -i 's/kNumMaxTopK\s*=\s*[0-9]\+/kNumMaxTopK = 16/g' csrc/kernels/internode_ll.cu
+sed -i 's/kNumMaxTopk\s*=\s*[0-9]\+/kNumMaxTopk = 16/g' csrc/kernels/internode_ll.cu
+
+# Verify the patch was applied
 grep -q "kNumMaxTop. = 16" csrc/kernels/internode_ll.cu && echo "Patch verified: kNumMaxTopK/k=16" || {
-    echo "ERROR: kNumMaxTopK patch not found in source!"; exit 1;
+    echo "ERROR: kNumMaxTopK patch failed to apply!"; exit 1;
 }
 
 # Build with full output so we can debug failures
