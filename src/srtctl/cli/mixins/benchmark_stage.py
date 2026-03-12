@@ -145,6 +145,20 @@ class BenchmarkStageMixin:
 
         return exit_code
 
+    def _build_benchmark_preamble(self) -> str | None:
+        """Build bash preamble for the benchmark process.
+
+        Runs the custom setup script from /configs/ (if config.setup_script is set)
+        before the benchmark command executes.
+        """
+        if self.config.setup_script:
+            script_path = f"/configs/{self.config.setup_script}"
+            return (
+                f"echo 'Running setup script: {script_path}' && "
+                f"if [ -f '{script_path}' ]; then bash '{script_path}'; else echo 'WARNING: {script_path} not found'; fi"
+            )
+        return None
+
     def _run_benchmark_script(
         self,
         runner: "BenchmarkRunner",
@@ -155,9 +169,12 @@ class BenchmarkStageMixin:
 
         cmd = runner.build_command(self.config, self.runtime)
         env_to_set = self._get_benchmark_env(runner)
+        preamble = self._build_benchmark_preamble()
 
         logger.info("Script: %s", runner.script_path)
         logger.info("Command: %s", shlex.join(cmd))
+        if preamble:
+            logger.info("Benchmark preamble: %s", preamble)
         logger.info("Log: %s", log_file)
 
         proc = start_srun_process(
@@ -167,6 +184,7 @@ class BenchmarkStageMixin:
             container_image=str(self.runtime.container_image),
             container_mounts=self.runtime.container_mounts,
             env_to_set=env_to_set,
+            bash_preamble=preamble,
         )
 
         # Wait for benchmark to complete
