@@ -118,7 +118,8 @@ for concurrency in "${CONCURRENCY_LIST[@]}"; do
         --ignore-eos \
         --request-rate 250 \
         --percentile-metrics ttft,tpot,itl,e2el \
-        --max-concurrency "$concurrency"
+        --max-concurrency "$concurrency" \
+        --trust-remote-code
 
     num_prompts=$((concurrency * 10))
     
@@ -147,6 +148,7 @@ for concurrency in "${CONCURRENCY_LIST[@]}"; do
         --request-rate "${REQ_RATE}" \
         --percentile-metrics ttft,tpot,itl,e2el \
         --max-concurrency "$concurrency" \
+        --trust-remote-code \
         --use-chat-template \
         --save-result --result-dir "$result_dir" --result-filename "$result_filename"
     set +x
