@@ -218,6 +218,7 @@ def allocate_endpoints(
     gpus_per_agg: int,
     gpus_per_node: int,
     available_nodes: Sequence[str],
+    allow_prefill_decode_colocation: bool = False,
 ) -> list[Endpoint]:
     """Allocate endpoints to nodes based on GPU requirements.
 
@@ -232,6 +233,8 @@ def allocate_endpoints(
         gpus_per_agg: GPUs per agg worker
         gpus_per_node: GPUs available per node
         available_nodes: List of available node hostnames
+        allow_prefill_decode_colocation: If True, decode workers may use
+            remaining GPUs on a node already used by prefill workers.
 
     Returns:
         List of Endpoint objects with node assignments
@@ -376,13 +379,13 @@ def allocate_endpoints(
     if num_prefill > 0:
         endpoints.extend(allocate_workers_simple("prefill", num_prefill, gpus_per_prefill))
 
-    # When there's a partial allocation on the current node (gpu_offset > 0) and
-    # there are more nodes available, advance to ensure prefill and decode don't
-    # share a node. This prevents the bug where a multi-node decode worker overlaps
-    # with a partial-node prefill worker.
+    # By default, when there's a partial allocation on the current node
+    # (gpu_offset > 0) and there are more nodes available, advance to ensure
+    # prefill and decode don't share a node. This prevents the bug where a
+    # multi-node decode worker overlaps with a partial-node prefill worker.
     # When there are no more nodes (decode_nodes=0 config), allow sharing.
     if num_decode > 0:
-        if gpu_offset > 0 and (node_idx + 1) < len(available_nodes):
+        if not allow_prefill_decode_colocation and gpu_offset > 0 and (node_idx + 1) < len(available_nodes):
             node_idx += 1
             gpu_offset = 0
         endpoints.extend(allocate_workers_simple("decode", num_decode, gpus_per_decode))
