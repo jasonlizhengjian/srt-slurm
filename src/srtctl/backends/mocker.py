@@ -165,6 +165,7 @@ class MockerProtocol:
         gpus_per_agg: int,
         gpus_per_node: int,
         available_nodes: Sequence[str],
+        spread_workers: bool = False,
     ) -> list["Endpoint"]:
         """Allocate endpoints to nodes."""
         from srtctl.core.topology import allocate_endpoints
@@ -178,6 +179,7 @@ class MockerProtocol:
             gpus_per_agg=gpus_per_agg,
             gpus_per_node=gpus_per_node,
             available_nodes=available_nodes,
+            spread_workers=spread_workers,
         )
 
     def endpoints_to_processes(
